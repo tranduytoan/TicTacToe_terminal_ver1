@@ -1,5 +1,3 @@
-// chưa phát triển bot AI
-
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -34,7 +32,8 @@ int main()
             }
             renderBoard(board);
         } else {
-            if (checkWin(board) == 'X') cout << "You Win!" << "\n\n\n\n";
+            if (checkWin(board) == 'D') cout << "DRAW!" << "\n\n\n\n";
+            else if (checkWin(board) == 'X') cout << "You Win!" << "\n\n\n\n";
             else cout << "You Lose!" << "\n\n\n\n";
 
             char answer = checkContinueGame();
@@ -53,18 +52,78 @@ int main()
 
 
 
-void botPlay(char board[3][3])  {
+
+
+void botPlay(char board[3][3]) {
+    if (board[1][1] == '-') {
+        board[1][1] = 'O';
+        return;
+    }
+
+
+    int bestScore = -1;
+    int bestX, bestY;
     for (int i = 0; i < 3; i++) {
-        bool breaK = false;
         for (int j = 0; j < 3; j++) {
-            if (board[i][j] == '-') {
-                breaK = true;
+            if (board[i][j] == '-')
+            {
                 board[i][j] = 'O';
-                break;
+                if (checkWin(board) == 'O') return; // bot thắng được thì đánh luôn
+                int score = 0;
+                for (int x = 0; x < 3; x++)
+                    for (int y = 0; y < 3; y++)
+                        if (board[x][y] == '-')
+                        {
+                            board[x][y] = 'O';
+                            if (checkWin(board) == 'O')
+                                score++;
+                            board[x][y] = '-';
+                        }
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestX = i;
+                    bestY = j;
+                }
+                board[i][j] = '-';
             }
         }
-        if (breaK) break;
     }
+
+
+    int bestScore_human = -1;
+    int bestX_human, bestY_human;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (board[i][j] == '-')
+            {
+                board[i][j] = 'X';
+                if (checkWin(board) == 'X') {
+                    board[i][j] = 'O'; // nguời thắng được thì chặn luôn
+                    return;
+                }
+                int score_human = 0;
+                for (int x = 0; x < 3; x++)
+                    for (int y = 0; y < 3; y++)
+                        if (board[x][y] == '-')
+                        {
+                            board[x][y] = 'X';
+                            if (checkWin(board) == 'X')
+                                score_human++;
+                            board[x][y] = '-';
+                        }
+                if (score_human > bestScore_human)
+                {
+                    bestScore_human = score_human;
+                    bestX_human = i;
+                    bestY_human = j;
+                }
+                board[i][j] = '-';
+            }
+        }
+    }
+    if (bestScore >= bestScore_human) board[bestX][bestY] = 'O';
+    else board[bestX_human][bestY_human] = 'O';
 }
 
 
@@ -86,6 +145,13 @@ void humanPlay(char board[3][3]) {
 
 
 char checkWin(char board[3][3]) {
+    bool checkFull = true;
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            if (board[y][x] == '-') checkFull = false;
+        }
+    }
+
     for (int y = 0; y < 3; y ++) {
         if (board[y][0] == board[y][1] && board[y][1] == board[y][2] && board[y][0] != '-') return board[y][0];
     }
@@ -94,7 +160,10 @@ char checkWin(char board[3][3]) {
     }
     if (board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != '-') return board[0][0];
     if (board[2][0] == board[1][1] && board[1][1] == board[0][2] && board[2][0] != '-') return board[2][0];
-    return 'N';
+
+    // Hòa hoặc chưa ai thắng
+    if (checkFull) return 'D'; // Hòa
+    return 'N'; // chưa ai thắng
 }
 
 
